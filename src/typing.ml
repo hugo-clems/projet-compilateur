@@ -17,3 +17,10 @@ let tp_prog (Prog (gvds, fdfs)) =
   Prog([],
        [Fundefn (Fundecl (BoolT, "even", [Vardecl (IntT, "n")]), [], Skip)])
 ;;
+
+(* Besoin ? Ici ? *)
+type tp = BoolT | IntT | VoidT;
+
+(* Vérifie expression dans l'environnement et l’annote avec des types *)
+let tp_expr = function env -> function exp ->
+(* A SUIVRE *)
