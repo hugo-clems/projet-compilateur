@@ -31,7 +31,6 @@ print_instr.cmo: print_instr.ml lang.cmo instrs.cmo
 comp.cmo: comp.ml print_instr.cmo gen.cmo typing.cmo parser.cmo interf.cmo
 	ocamlc -c $<
 
-
 # ocaml lexer and parser
 lexer.ml: lexer.mll lang.cmo
 	ocamllex $<
