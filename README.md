@@ -14,9 +14,17 @@ Travail effectué en collaboration avec Pauline Fuzier (entraide et réflexions)
 ## Carnet de bord
 ### Exercice 1
 Après plusieurs tests ayant échoués, malgré que mon code me semblais bon, j'ai du redéfinir dans `typing.ml` des fonctions présentes dans `lang.ml`.
-
 Je ne trouve cependant pas pourquoi...
 
-#### Tests
-Le project compile. Le warning est du à l'absence du cas *CallE* dans la fonction principale.
-Les tests unitaires ont tous réussis.
+Le project compile.
+Les tests unitaires ont réussis.
+
+Le warning est du à l'absence du cas `CallE` dans la fonction principale.
+
+### Exercice 2
+Même problème, j'ai du redéfinir une fonction de `lang.ml` dans `typing.ml`.
+
+Le project compile.
+Les tests unitaires ont réussis.
+
+Plus aucun Warning, en effet tous les cas de la fonction principale sont maintenant couverts.
