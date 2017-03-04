@@ -28,3 +28,9 @@ Le project compile.
 Les tests unitaires ont réussis.
 
 Plus aucun Warning, en effet tous les cas de la fonction principale sont maintenant couverts.
+
+### Exercice 3
+RAS
+
+Le project compile.
+Les tests unitaires ont réussis.
