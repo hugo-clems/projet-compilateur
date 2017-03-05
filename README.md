@@ -12,6 +12,7 @@ Travail effectué en collaboration avec Pauline Fuzier (entraide et réflexions)
 	ocaml tests.ml
 
 ## Carnet de bord
+### Partie I
 ### Exercice 1
 Après plusieurs tests ayant échoués, malgré que mon code me semblais bon, j'ai du redéfinir dans `typing.ml` des fonctions présentes dans `lang.ml`.
 Je ne trouve cependant pas pourquoi...
@@ -34,3 +35,18 @@ RAS
 
 Le project compile.
 Les tests unitaires ont réussis.
+
+### Exercice 4
+Le project compile.
+Les tests unitaires ont réussis.
+
+Le warning est du à l'absence de certains cas (comme demandé dans la consigne) dans la fonction principale.
+
+Ajout d'exception pour rendre la compilation de la partie I plus lisible.
+
+### Exercice 5
+TODO
+
+---
+### Partie 2
+A Venir
