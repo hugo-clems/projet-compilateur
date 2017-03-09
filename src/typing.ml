@@ -21,12 +21,6 @@ let tp_of_expr = function
 	| CallE (t, _, _) -> t;;
 let params_of_fundecl (Fundecl (t, fn, pds)) = pds;;
 
-(* TODO: put your definitions here *)
-let tp_prog (Prog (gvds, fdfs)) =
-	Prog([],
-		[Fundefn (Fundecl (BoolT, "even", [Vardecl (IntT, "n")]), [], Skip)])
-;;
-
 
 
 
@@ -120,6 +114,13 @@ let rec tp_expr = function env -> function
 			if verifCallE(arguments, params_of_fundecl f)
 			then CallE (type_of_fundecl f, nom, arguments) else raise MauvaisArguments;;
 
+
+
+
+let tp_prog (Prog (gvds, fdfs)) =
+	Prog([],
+		[Fundefn (Fundecl (BoolT, "even", [Vardecl (IntT, "n")]), [], Skip)])
+;;
 
 
 
