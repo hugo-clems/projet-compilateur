@@ -115,6 +115,18 @@ let rec tp_expr = function env -> function
 			then CallE (type_of_fundecl f, nom, arguments) else raise MauvaisArguments;;
 
 
+let rec tp_stmt = function env -> function
+	| Skip -> Skip
+	| Assign (aType, aVar, aExpr) -> Assign(VoidT, aVar, (tp_expr env aExpr))
+	| Seq (s1, s2) -> Seq((tp_stmt env s1), (tp_stmt env s2))
+	| Cond (cExpr, c1, c2) -> Cond((tp_expr env cExpr), (tp_stmt env c1), (tp_stmt env c2))
+	| While (wExpr, wStmt) -> While((tp_expr env wExpr), (tp_stmt env wStmt))
+	| CallC (cName, exprList) -> CallC(cName, (listmap (tp_expr env) exprList))
+	| Return rExpr -> Return(tp_expr env rExpr);;
+
+
+
+
 
 
 let tp_prog (Prog (gvds, fdfs)) =
