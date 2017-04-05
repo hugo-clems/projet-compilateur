@@ -115,6 +115,11 @@ let rec tp_expr = function env -> function
 			then CallE (type_of_fundecl f, nom, arguments) else raise MauvaisArguments;;
 
 
+
+
+(*
+ * Type un statement
+ *)
 let rec tp_stmt = function env -> function
 	| Skip -> Skip
 	| Assign (aType, aVar, aExpr) -> Assign(VoidT, aVar, (tp_expr env aExpr))
@@ -125,6 +130,39 @@ let rec tp_stmt = function env -> function
 	| Return rExpr -> Return(tp_expr env rExpr);;
 
 
+(*
+ * Vérifie que le stmt et le type de la fonction sont égaux
+ *)
+let rec fdefnVerifTypeF = function tpF -> function
+	| Return rExpr -> tpF == (tp_of_expr rExpr)
+	| Seq (s1, s2) -> (fdefnVerifTypeF tpF s1) || (fdefnVerifTypeF tpF s2)
+	| Cond (cExpr, c1, c2) -> (fdefnVerifTypeF tpF c1) || (fdefnVerifTypeF tpF c2)
+	| While (wExpr, wStmt) -> (fdefnVerifTypeF tpF wStmt)
+	| _ -> false;;
+
+(*
+ * Prépare la liste des variables de la fonction pour l'insérer dans l'environnement
+ *)
+let rec prepareVars = function
+	| [] -> []
+	| ((Vardecl (vTp, vNom))::reste) -> (vNom, vTp)::(prepareVars reste);;
+
+(*
+ * Met à jour l'environnement (ajout des variables de la fonction)
+ *)
+let majEnv = function env -> function vars -> function rType ->
+	{localvar = vars @ (env.localvar); globalvar = env.globalvar; returntp = rType; funbind = env.funbind};;
+
+exception FonctionMalTypee;;
+
+(*
+ * Vérifie qu’une définition de fonction est bien typée.
+ *)
+let tp_fdefn = function env -> function Fundefn (Fundecl (fTp, fnom, fVardecl) as fonction, variables, fStmt) ->
+	let vars = (prepareVars variables) in let env2 = (majEnv env vars fTp) in
+	if (fdefnVerifTypeF fTp (tp_stmt env2 fStmt))
+	then Fundefn (fonction, variables, fStmt)
+	else raise FonctionMalTypee;;
 
 
 
