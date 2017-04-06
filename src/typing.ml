@@ -3,13 +3,11 @@
 open Lang
 open Analyses
 
-(* Environments *)
 
-type environment = 
-    {localvar: (vname * tp) list; 
-     globalvar: (vname * tp) list; 
-     returntp: tp;
-     funbind: fundecl list};;
+(* Environments *)
+type environment = {localvar: (vname * tp) list; globalvar: (vname * tp) list;
+					returntp: tp; funbind: fundecl list};;
+
 
 (* Pour une raison inconnu, il est nécéssaires de redéfinir ces fonctions présentes dans lang.ml *)
 let tp_of_vardecl (Vardecl (t, _)) = t;;
@@ -24,21 +22,45 @@ let params_of_fundecl (Fundecl (t, fn, pds)) = pds;;
 
 
 
-(* **************** *)
-(* *** Mon code *** *)
-(* **************** *)
 
-(* Si la variable/fonction recherchée n'est pas présente dans l'environement de recherche *)
+
+
+
+(* ************************************************* *)
+(* *** 2. Typage et compilation pour expressions *** *)
+(* ************************************************* *)
+
+(* ****** 2.1 - Typage d’expressions simples ******* *)
+(* ********** 2.2 - Typage avec fonctions ********** *)
+(* Corresponds aux exercices 1 & 2 *)
+
+
+
+
+(* *** Gestion des erreurs *** *)
+
+(* Si la variable/fonction recherchée n'est pas présente dans l'environnement de recherche *)
 exception PasDansEnv;;
+
 
 (* Si il y a une erreur de types (dans les opérations ou IfThenElse) *)
 exception ErreurTypes;;
+
 
 (* Si les arguments passés dans CallE ne correspondent pas à la fonction utilisée *)
 exception MauvaisArguments;;
 
 
-(* Applique une fonction à tous les éléments de la liste *)
+
+
+(* *** Fonctions auxiliaires *** *)
+
+(**
+ * Applique une fonction à tous les éléments de la liste
+ * @param f - la fonction à appliquer
+ * @param liste - la liste des éléments
+ * @return la liste des élèments modifiés par la fonction
+ *)
 let listmap = function f -> function liste ->
 	let rec aux = function
 		| [] -> []
@@ -46,39 +68,68 @@ let listmap = function f -> function liste ->
 	in aux(liste);;
 
 
-(* Transforme le type value en type tp *)
+(**
+ * Transforme le type "value" en type "tp"
+ * @param le type "value"
+ * @return le type "tp"
+ *)
 let valueTOtp = function
 	| BoolV _ -> BoolT
 	| IntV _ -> IntT
 	| VoidV -> VoidT;;
 
 
-(* Vérifie si 2 expressions ont le même type *)
+(**
+ * Vérifie que deux expressions ont le même type
+ * @param les expressions ('a expr)
+ * @return true si les expressions ont le même types, false sinon
+ *)
 let memeType = function exp1 -> function exp2 -> (tp_of_expr exp1) == (tp_of_expr exp2);;
 
-(* Vérifie si une expressions est bien d'un type donné *)
+
+(**
+ * Vérifie si une expression est bien d'un type donné
+ * @param exp1 - l'expression ('a expr)
+ * @param leType - le type éventuel de l'expression
+ * @return true si l'expression est bien de ce type, false sinon
+ *)
 let estCeType = function exp1 -> function leType -> (tp_of_expr exp1) == leType;;
 
 
-(* Parcours l'environement à la recherche de l'élément n, renvoie son type associé *)
+(**
+ * Recherche le type d'un élément de l'environnement
+ * @param n - l'élément dont on cherche le type
+ * @param l'environnement de recherche
+ * @return le type de l'élément recherché
+ * @throw PasDansEnv - si l'élement n'est pas présent dans l'environnement
+ *)
 let rec parcoursEnv = function n -> function
 	| [] -> raise PasDansEnv
 	| ((a,b)::r) -> if a = n then b else (parcoursEnv n r);;
 
 
-(* Accesseurs sur fundecl (en complèment de celui présent dans lang *)
+(* Accesseurs sur fundecl (en complèment de celui présent dans lang) *)
 let type_of_fundecl (Fundecl (t, fn, pds)) = t;;
 let name_of_fundecl (Fundecl (t, fn, pds)) = fn;;
 
 
-(* Parcours la liste des fonctions présente dans l'environement *)
+(**
+ * Recherche une fonction dans l'environnement
+ * @param nomR - le nom de la fonction recherchée
+ * @param l'environnement de recherche
+ * @return la fonction recherché
+ * @throw PasDansEnv - si la fonction n'est pas présente dans l'environnement
+ *)
 let rec parcoursFct = function nomR -> function
 	| [] -> raise PasDansEnv
 	| ((Fundecl (a,leNom,c))::r) -> if leNom = nomR then Fundecl (a,leNom,c) else (parcoursFct nomR r);;
 
 
-(* Vérifie que les types des arguments (CallE) sont compatibles
- * avec les types des paramètres(fundecl)
+(**
+ * Vérifie que les types des arguments (CallE) sont compatibles
+ * avec les types des paramètres (fundecl)
+ * @param (arguments de CallE, paramètres de fundecl)
+ * @return true si les types sons compatibles, false sinon
  *)
 let rec verifCallE = function
 	| ([],_) -> true
@@ -86,10 +137,16 @@ let rec verifCallE = function
 	| ((arg::resteA),(param::resteP)) -> estCeType arg (tp_of_vardecl param) && verifCallE(resteA,resteP);;
 
 
-(* Donne le type d'une opération
+(**
+ * Donne le type d'une opération
  * Op. arithmétique : IntT * IntT -> IntT
  * Op. comparaison : 'a * 'a -> BoolT
  * Op. logique : BoolT * BoolT -> BoolT
+ * @param e1 - expression de l'opération
+ * @param e2 - expression de l'opération
+ * @param type de l'opération
+ * @return le type de l'opération (tp)
+ * @throw ErreurTypes - si les expressions n'ont pas des types compatibles pour l'opération
  *)
 let typeOperations = function e1 -> function e2 -> function
 	| BArith _ -> if estCeType e1 IntT && estCeType e2 IntT then IntT else raise ErreurTypes
@@ -97,7 +154,16 @@ let typeOperations = function e1 -> function e2 -> function
 	| BLogic _ -> if estCeType e1 BoolT && estCeType e2 BoolT then BoolT else raise ErreurTypes;;
 
 
-(* Fonction principale : Vérifie l'expression et l'annote avec des types *)
+
+
+(* *** Fonction principale *** *)
+
+(**
+ * Vérifie et annote (type) une expression
+ * @param env - l'environnement actuel
+ * @param l'expression à vérifier
+ * @return l'expression typée
+ *)
 let rec tp_expr = function env -> function
 	| Const ((_ : int), cvaleur) -> (Const ((valueTOtp cvaleur), cvaleur))
 	| VarE ((_ : int), Var (varBinding, vVname)) ->
@@ -117,8 +183,31 @@ let rec tp_expr = function env -> function
 
 
 
-(*
- * Type un statement
+
+
+
+
+(* ************************************************ *)
+(* *** 2. Typage et compilation pour programmes *** *)
+(* ************************************************ *)
+
+(* ****************** 3.1 Typage ****************** *)
+(* Corresponds aux exercices 6, 7 & 8 *)
+
+
+
+
+(* *** Gestion des erreurs *** *)
+exception FonctionMalTypee;;
+
+
+
+
+(**
+ * Type un statement (stmt)
+ * @param env - l'environnement de recherche
+ * @param le statement à typer
+ * @return le statement typé
  *)
 let rec tp_stmt = function env -> function
 	| Skip -> Skip
@@ -130,8 +219,16 @@ let rec tp_stmt = function env -> function
 	| Return rExpr -> Return(tp_expr env rExpr);;
 
 
-(*
- * Vérifie que le stmt et le type de la fonction sont égaux
+
+
+(* *** Fonctions auxiliaires *** *)
+
+(**
+ * Vérifie que le statement renvoie bien le bon type
+ * (c'est-à-dire qu'il est du même type que la fonction du Fundefn)
+ * @param tpF - le type de la fonction
+ * @param le statement à vérifier
+ * @return true si le type est bon, false sinon
  *)
 let rec fdefnVerifTypeF = function tpF -> function
 	| Return rExpr -> tpF == (tp_of_expr rExpr)
@@ -140,23 +237,41 @@ let rec fdefnVerifTypeF = function tpF -> function
 	| While (wExpr, wStmt) -> (fdefnVerifTypeF tpF wStmt)
 	| _ -> false;;
 
-(*
- * Prépare la liste des variables de la fonction pour l'insérer dans l'environnement
+
+(**
+ * Prépare une liste de Vardecl pour être inséré dans l'environnement
+ * @param la liste de Vardecl
+ * @return la liste des variables (nom, type)
  *)
 let rec prepareVars = function
 	| [] -> []
 	| ((Vardecl (vTp, vNom))::reste) -> (vNom, vTp)::(prepareVars reste);;
 
-(*
- * Met à jour l'environnement (ajout des variables de la fonction)
+
+(**
+ * Mets à jour l'environnement
+ * @param env - l'environnement à mettre à jour
+ * @param vars - les variables à ajouter dans l'environnement
+ * @param rType - le type de retour
+ * @return le nouvel environnement
  *)
 let majEnv = function env -> function vars -> function rType ->
 	{localvar = vars @ (env.localvar); globalvar = env.globalvar; returntp = rType; funbind = env.funbind};;
 
-exception FonctionMalTypee;;
 
-(*
- * Vérifie qu’une définition de fonction est bien typée.
+
+
+(* *** Fonctions principales *** *)
+
+(**
+ * Vérifie que la fonction est bien définie et l'ajoute dans l'environnement
+ * @param env - l'environnement à mettre à jour
+ * @param Fundefn (...) - la fonction à vérifier et ajouter
+ *			fonction - type, nom & paramètres de la fonction
+ *			variables - variables de la fonction
+ *			fStmt - corps de la fonction
+ * @return la fonction
+ * @throw FonctionMalTypee - si la fonction est mal typée
  *)
 let tp_fdefn = function env -> function Fundefn (Fundecl (fTp, fnom, fVardecl) as fonction, variables, fStmt) ->
 	let vars = (prepareVars variables) in let env2 = (majEnv env vars fTp) in
@@ -165,8 +280,9 @@ let tp_fdefn = function env -> function Fundefn (Fundecl (fTp, fnom, fVardecl) a
 	else raise FonctionMalTypee;;
 
 
-
-
+(**
+ * TODO
+ *)
 let tp_prog (Prog (gvds, fdfs)) =
 	Prog([],
 		[Fundefn (Fundecl (BoolT, "even", [Vardecl (IntT, "n")]), [], Skip)])
