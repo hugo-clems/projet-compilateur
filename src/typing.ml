@@ -275,18 +275,36 @@ let majEnv = function env -> function vars -> function rType ->
  *)
 let tp_fdefn = function env -> function Fundefn (Fundecl (fTp, fnom, fVardecl) as fonction, variables, fStmt) ->
 	let vars = (prepareVars variables) in let env2 = (majEnv env vars fTp) in
-	if (fdefnVerifTypeF fTp (tp_stmt env2 fStmt))
-	then Fundefn (fonction, variables, fStmt)
-	else raise FonctionMalTypee;;
+		if (fdefnVerifTypeF fTp (tp_stmt env2 fStmt))
+		then Fundefn (fonction, variables, fStmt)
+		else raise FonctionMalTypee;;
 
 
 (**
- * TODO
+ * Vérifie un programme
+ * Créer un environnement initial avec les variables globales,
+ * et vérifie les définitions de fonctions avec cette environnement.
+ * @param varGlob - liste des variables globales
+ * @param fundefListe - liste des fonctions
+ * @return le programme avec les fonctions vérifiées
  *)
-let tp_prog (Prog (gvds, fdfs)) =
+let tp_prog = function Prog (varGlob, fundefListe) ->
+	let env = {localvar = []; globalvar = (prepareVars varGlob); returntp = VoidT; funbind = []} in
+		let rec f = function
+			| [] -> []
+			| (a::r) -> try (tp_fdefn env a)::(f r)
+						with FonctionMalTypee -> failwith "Le programme n'est pas bon..."
+		in Prog([], f fundefListe);;
+
+
+
+
+(* *** tp_prog original *** *)
+
+(*let tp_prog (Prog (gvds, fdfs)) =
 	Prog([],
 		[Fundefn (Fundecl (BoolT, "even", [Vardecl (IntT, "n")]), [], Skip)])
-;;
+;;*)
 
 
 
