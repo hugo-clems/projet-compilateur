@@ -239,20 +239,21 @@ let majEnv = function env -> function vars -> function rType ->
 (* *** Fonctions principales *** *)
 
 (**
- * Vérifie que la fonction est bien définie et l'ajoute dans l'environnement
+ * Type la fonction et vérifie que la fonction est bien définie
  * @param env - l'environnement à mettre à jour
  * @param Fundefn (...) - la fonction à vérifier et ajouter
  *			fonction - type, nom & paramètres de la fonction
  *			variables - variables de la fonction
  *			fStmt - corps de la fonction
- * @return la fonction
+ * @return la fonction typée
  * @throw FonctionMalTypee - si la fonction est mal typée
  *)
 let tp_fdefn = function env -> function Fundefn (Fundecl (fTp, fnom, fVardecl) as fonction, variables, fStmt) ->
 	let vars = (prepareVars variables) in let env2 = (majEnv env vars fTp) in
-		if (fdefnVerifTypeF fTp (tp_stmt env2 fStmt))
-		then Fundefn (fonction, variables, fStmt)
-		else raise FonctionMalTypee;;
+		let newSmtp = (tp_stmt env2 fStmt) in
+			if (fdefnVerifTypeF fTp newSmtp)
+			then Fundefn (fonction, variables, newSmtp)
+			else raise FonctionMalTypee;;
 
 
 (**
