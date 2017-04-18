@@ -12,7 +12,8 @@ Les tests unitaires sont là enfin de vérifier l'intégritée des fonctions au 
 En effet, elle ne suffisent pas à prouver que le code est bon, mais permettre de vérifier que les fonctions on toujours le comportement attendu en cas de modification du code.
 
 	make
-	ocaml testsUnitaires.ml
+	ocaml testsUnitairesP1.ml
+	ocaml testsUnitairesP2.ml
 
 #### Avec jasmin et java
 
@@ -92,4 +93,10 @@ Et j'obtients le résultat de mes opérations :
 ---
 
 ### Partie 2
-A Venir
+### Exercice 6, 7 & 8
+RAS
+
+Le project compile. Les tests unitaires ont réussis.
+
+### Exercice 9
+TODO, voir brouillon

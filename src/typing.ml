@@ -173,7 +173,11 @@ let rec tp_expr = function env -> function
 
 
 (* *** Gestion des erreurs *** *)
+
 exception FonctionMalTypee;;
+
+(* Si une des fonctions est mal typée, alors le programme n'est pas bon *)
+exception ProgrammeMauvais;;
 
 
 
@@ -263,13 +267,14 @@ let tp_fdefn = function env -> function Fundefn (Fundecl (fTp, fnom, fVardecl) a
  * @param varGlob - liste des variables globales
  * @param fundefListe - liste des fonctions
  * @return le programme avec les fonctions vérifiées
+ * @throw ProgrammeMauvais - si une des fonctions est mal typée, alors le programme n'est pas bon
  *)
 let tp_prog = function Prog (varGlob, fundefListe) ->
 	let env = {localvar = []; globalvar = (prepareVars varGlob); returntp = VoidT; funbind = []} in
 		let rec f = function
 			| [] -> []
 			| (a::r) -> try (tp_fdefn env a)::(f r)
-						with FonctionMalTypee -> failwith "Le programme n'est pas bon..."
+						with FonctionMalTypee -> raise ProgrammeMauvais
 		in Prog([], f fundefListe);;
 
 
