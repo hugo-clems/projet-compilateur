@@ -56,19 +56,6 @@ exception MauvaisArguments;;
 (* *** Fonctions auxiliaires *** *)
 
 (**
- * Applique une fonction à tous les éléments de la liste
- * @param f - la fonction à appliquer
- * @param liste - la liste des éléments
- * @return la liste des élèments modifiés par la fonction
- *)
-let listmap = function f -> function liste ->
-	let rec aux = function
-		| [] -> []
-		| (a::q) -> (f a)::(aux q)
-	in aux(liste);;
-
-
-(**
  * Transforme le type "value" en type "tp"
  * @param le type "value"
  * @return le type "tp"
@@ -94,18 +81,6 @@ let memeType = function exp1 -> function exp2 -> (tp_of_expr exp1) == (tp_of_exp
  * @return true si l'expression est bien de ce type, false sinon
  *)
 let estCeType = function exp1 -> function leType -> (tp_of_expr exp1) == leType;;
-
-
-(**
- * Recherche le type d'un élément de l'environnement
- * @param n - l'élément dont on cherche le type
- * @param l'environnement de recherche
- * @return le type de l'élément recherché
- * @throw PasDansEnv - si l'élement n'est pas présent dans l'environnement
- *)
-let rec parcoursEnv = function n -> function
-	| [] -> raise PasDansEnv
-	| ((a,b)::r) -> if a = n then b else (parcoursEnv n r);;
 
 
 (* Accesseurs sur fundecl (en complèment de celui présent dans lang) *)
@@ -167,7 +142,7 @@ let typeOperations = function e1 -> function e2 -> function
 let rec tp_expr = function env -> function
 	| Const ((_ : int), cvaleur) -> (Const ((valueTOtp cvaleur), cvaleur))
 	| VarE ((_ : int), Var (varBinding, vVname)) ->
-		(VarE ((parcoursEnv vVname env.localvar), Var (varBinding, vVname)))
+		(VarE ((List.assoc vVname env.localvar), Var (varBinding, vVname)))
 	| BinOp ((_ : int), bbinop, bexpr1, bexpr2) ->
 		let e1 = (tp_expr env bexpr1) and e2 = (tp_expr env bexpr2) in
 			(BinOp ((typeOperations e1 e2 bbinop), bbinop, e1, e2))
@@ -176,7 +151,7 @@ let rec tp_expr = function env -> function
 			if estCeType e1 BoolT && memeType e2 e3
 			then IfThenElse ((tp_of_expr e2), e1, e2, e3) else raise ErreurTypes
 	| CallE ((_ : int), nom, args) -> 
-		let f = parcoursFct nom env.funbind and arguments = listmap (tp_expr env) args in
+		let f = parcoursFct nom env.funbind and arguments = List.map (tp_expr env) args in
 			if verifCallE(arguments, params_of_fundecl f)
 			then CallE (type_of_fundecl f, nom, arguments) else raise MauvaisArguments;;
 
@@ -188,7 +163,7 @@ let rec tp_expr = function env -> function
 
 
 (* ************************************************ *)
-(* *** 2. Typage et compilation pour programmes *** *)
+(* *** 3. Typage et compilation pour programmes *** *)
 (* ************************************************ *)
 
 (* ****************** 3.1 Typage ****************** *)
@@ -215,7 +190,7 @@ let rec tp_stmt = function env -> function
 	| Seq (s1, s2) -> Seq((tp_stmt env s1), (tp_stmt env s2))
 	| Cond (cExpr, c1, c2) -> Cond((tp_expr env cExpr), (tp_stmt env c1), (tp_stmt env c2))
 	| While (wExpr, wStmt) -> While((tp_expr env wExpr), (tp_stmt env wStmt))
-	| CallC (cName, exprList) -> CallC(cName, (listmap (tp_expr env) exprList))
+	| CallC (cName, exprList) -> CallC(cName, (List.map (tp_expr env) exprList))
 	| Return rExpr -> Return(tp_expr env rExpr);;
 
 

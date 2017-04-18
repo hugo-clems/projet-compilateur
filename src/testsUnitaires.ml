@@ -69,7 +69,8 @@ let koCallEMauvaisArg = CallE(0, "f", [Const (0, BoolV true); Const (0, BoolV tr
 (* Fonction pour "automatiser" les tests *)
 let testKoTpExpr = function exp -> try (tp_expr env1 exp)
 								with PasDansEnv -> okTpExpr | ErreurTypes -> okTpExpr
-								| MauvaisArguments -> okTpExpr | _ -> koTpExpr;;
+								| MauvaisArguments -> okTpExpr | Not_found -> okTpExpr
+								| _ -> koTpExpr;;
 
 
 (* Résultats à obtenir *)
