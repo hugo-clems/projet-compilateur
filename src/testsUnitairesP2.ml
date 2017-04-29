@@ -152,13 +152,35 @@ resTest "Exercice 8 - Avec fonction mal typée" (try (tp_prog exExo8) = (tp_prog
 
 
 
+(* ****************** *)
+(* *** Exercice 9 *** *)
+(* ****************** *)
+
+(* Test IfThenElse *)
+let v = ["x";"y";"z"];;
+let ieTrue = Const (BoolT, (BoolV true));;
+let ieFalse = Const (BoolT, (BoolV false));;
+let ieTest = IfThenElse (IntT, ieFalse, (Const (IntT, (IntV 444))), (Const (IntT, (IntV 555))));;
+let i1test = IfThenElse (IntT, ieTrue, (Const (IntT, (IntV 666))), (Const (IntT, (IntV 777))));;
+let i2test = IfThenElse (IntT, ieTrue, (Const (IntT, (IntV 888))), (Const (IntT, (IntV 999))));;
+let ifTest = IfThenElse (IntT, ieTest, i1test, i2test);;
+
+let okIf = [Loadc (BoolT, BoolV false); Loadc (IntT, IntV 0); If (BCeq, [2; 0]);
+ Loadc (IntT, IntV 444); Goto [2; 2]; Label [2; 0]; Loadc (IntT, IntV 555);
+ Label [2; 2]; Loadc (IntT, IntV 0); If (BCeq, [0]);
+ Loadc (BoolT, BoolV true); Loadc (IntT, IntV 0); If (BCeq, [1; 0]);
+ Loadc (IntT, IntV 666); Goto [1; 2]; Label [1; 0]; Loadc (IntT, IntV 777);
+ Label [1; 2]; Goto [2]; Label [0]; Loadc (BoolT, BoolV true);
+ Loadc (IntT, IntV 0); If (BCeq, [0; 0]); Loadc (IntT, IntV 888);
+ Goto [0; 2]; Label [0; 0]; Loadc (IntT, IntV 999); Label [0; 2]; Label [2]];;
+
+(* Test CallE *)
+let testCE = CallE (IntT, "add2", [Const (IntT, (IntV 2)) ; Const (IntT, (IntV 4))]);;
+let okCE = [Loadc (IntT, IntV 2); Loadc (IntT, IntV 4); Invoke (IntT, "add2", [IntT; IntT]); ReturnI IntT];;
 
 
-
-
-
-
-
+resTest "Exercice 9 - IfThenElse" ((gen_expr v [] ifTest) = okIf);;
+resTest "Exercice 9 - CallE" ((gen_expr v [] testCE) = okCE);;
 
 
 
