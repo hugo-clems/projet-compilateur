@@ -94,7 +94,40 @@ let rec gen_expr = function variables -> function chemin -> function
 (* *** 3.2 - Génération de code *** *)
 (* Corresponds aux exercices 10 & 11 *)
 
-(* TODO *)
+(**
+ * Traduit un statement en instruction
+ * @param variables - liste des variables de la fonction actuelle
+ * @param chemin - le chemin actuel pour les labels
+ * @param le statement à traduire
+ * @return l'instruction traduite
+ *)
+let rec gen_stmt = fun variables chemin -> function
+	| Skip -> [Nop]
+	| Assign (aType, Var (aVb, aVn), aExpr) ->
+		(gen_expr variables chemin aExpr) @ [Storev (aType, (position aVn variables))]
+	| Seq (s1, s2) -> (gen_stmt variables chemin s1) @ (gen_stmt variables chemin s2)
+	| Cond (cExpr, c1, c2) -> let lFalse = chemin @ [0] and lFin = chemin @ [2] in
+		(gen_expr variables lFin cExpr) @ [Loadc (IntT, (IntV 0))] @ [If (BCeq, lFalse)] @
+		(gen_stmt variables (chemin @ [1]) c1) @ [Goto lFin] @
+		[Label lFalse] @ (gen_stmt variables lFalse c2) @ [Label lFin]
+	| While (wExpr, wStmt) -> let lFalse = chemin @ [0] and lWhile = chemin @ [1] in
+		[Label lWhile] @ (gen_expr variables (chemin @ [2]) wExpr) @ [Loadc (IntT, (IntV 0))] @
+		[If (BCeq, lFalse)] @ (gen_stmt variables lWhile wStmt) @ [Goto lWhile] @
+		[Label lFalse] @ [Nop]
+	| CallC (cName, exprList) ->
+		let rec genCallC = fun listeInstr listeType -> function
+			| [] -> (listeInstr, listeType)
+			| (elt::reste) -> let instrElt = (gen_expr variables chemin elt) and tpElt = (tp_of_expr elt) in
+				genCallC (listeInstr @ instrElt) (listeType @ [tpElt]) reste
+		in let (listeInstr, listeType) = (genCallC [] [] exprList) in
+			listeInstr @ [Invoke (VoidT, cName, listeType)] @ [ReturnI VoidT]
+	| Return rExpr -> [ReturnI (tp_of_expr rExpr)];;
+
+
+
+
+
+
 
 
 (* ************************************************************ *)

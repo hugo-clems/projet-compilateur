@@ -39,6 +39,8 @@ let resTest = function exo -> function estReussi ->
 let env0 = {localvar = []; globalvar = []; returntp = VoidT; funbind = []};;
 let env1 = {localvar = [("n",IntT);("b",BoolT)]; globalvar = []; returntp = VoidT; funbind = []};;
 
+let vars = ["x";"y";"z"];;
+
 
 
 
@@ -157,7 +159,6 @@ resTest "Exercice 8 - Avec fonction mal typée" (try (tp_prog exExo8) = (tp_prog
 (* ****************** *)
 
 (* Test IfThenElse *)
-let v = ["x";"y";"z"];;
 let ieTrue = Const (BoolT, (BoolV true));;
 let ieFalse = Const (BoolT, (BoolV false));;
 let ieTest = IfThenElse (IntT, ieFalse, (Const (IntT, (IntV 444))), (Const (IntT, (IntV 555))));;
@@ -179,8 +180,54 @@ let testCE = CallE (IntT, "add2", [Const (IntT, (IntV 2)) ; Const (IntT, (IntV 4
 let okCE = [Loadc (IntT, IntV 2); Loadc (IntT, IntV 4); Invoke (IntT, "add2", [IntT; IntT]); ReturnI IntT];;
 
 
-resTest "Exercice 9 - IfThenElse" ((gen_expr v [] ifTest) = okIf);;
-resTest "Exercice 9 - CallE" ((gen_expr v [] testCE) = okCE);;
+resTest "Exercice 9 - IfThenElse" ((gen_expr vars [] ifTest) = okIf);;
+resTest "Exercice 9 - CallE" ((gen_expr vars [] testCE) = okCE);;
+
+
+
+
+(* ******************* *)
+(* *** Exercice 10 *** *)
+(* ******************* *)
+
+let testSeqCond10 = Seq (Skip, Cond (Const (BoolT, (BoolV true)),
+									Assign (VoidT, Var (Local, "x"), Const (IntT, IntV 0))
+									, Skip));;
+
+let testWhileAssign10 = While (
+	BinOp (BoolT, BCompar BCne, VarE (IntT, Var (Local, "x")), Const (IntT, (IntV 5)))
+	, Assign (VoidT, Var (Local, "x"),
+				(BinOp (IntT, BArith BAadd, VarE (IntT, Var (Local, "x")), Const (IntT, IntV 1)))
+		));;
+
+let testCallC10 = CallC ("add2", [Const (IntT, (IntV 2)) ; Const (IntT, (IntV 4))]);;
+
+let testReturn10 = Return (VarE (IntT, Var (Local, "x")));;
+
+
+let okSeqCond10 = [Nop; Loadc (BoolT, BoolV true); Loadc (IntT, IntV 0); If (BCeq, [0]);
+ 					Loadc (IntT, IntV 0); Storev (VoidT, 0); Goto [2]; Label [0]; Nop;
+ 					Label [2]];;
+
+let okWhileAssign10 = [Label [1]; Loadv (IntT, 0); Loadc (IntT, IntV 5);
+					   Bininst (BoolT, BCompar BCne); Loadc (IntT, IntV 0); If (BCeq, [0]);
+					   Loadv (IntT, 0); Loadc (IntT, IntV 1); Bininst (IntT, BArith BAadd);
+					   Storev (VoidT, 0); Goto [1]; Label [0]; Nop];;
+
+let okCallC10 = [Loadc (IntT, IntV 2); Loadc (IntT, IntV 4);
+				  Invoke (VoidT, "add2", [IntT; IntT]); ReturnI VoidT];;
+
+let okReturn10 = [ReturnI IntT];;
+
+
+resTest "Exercice 10 - Seq & Cond" ((gen_stmt vars [] testSeqCond10) = okSeqCond10);;
+resTest "Exercice 10 - While & Assign" ((gen_stmt vars [] testWhileAssign10) = okWhileAssign10);;
+resTest "Exercice 10 - CallC" ((gen_stmt vars [] testCallC10) = okCallC10);;
+resTest "Exercice 10 - Return" ((gen_stmt vars [] testReturn10) = okReturn10);;
+
+
+
+
 
 
 

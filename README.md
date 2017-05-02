@@ -98,5 +98,38 @@ RAS
 
 Le project compile. Les tests unitaires ont réussis.
 
-### Exercice 9
-TODO, voir brouillon
+### Exercice 9 & 10
+#### Fonctionnement d'un IfThenElse :
+
+	On insère le code du IF
+	On insère un 0
+	If Beq lFalse (* <=> Si le code du if renvoie faux, Goto lFalse *)
+		On insère le code du THEN
+		Goto lFin
+	lFalse:
+		On insère le code du ELSE
+	lFin:
+		...
+
+#### Fonctionnement d'un Appel de fonction :
+
+	On insère tous les paramètres
+	Invoke la fonction
+	Return
+
+#### Fonctionnement d'un While :
+
+	lWhile:
+		On insère la condition de bouclage du While
+		On insère un 0
+		If Beq lFalse
+			On insère le code du corps du While
+			Goto lWhile
+	lFalse:
+		Nop (* While fini, on continue *)
+
+Le project compile. Les tests unitaires ont réussis.
+
+### Exercice 11
+
+TODO
