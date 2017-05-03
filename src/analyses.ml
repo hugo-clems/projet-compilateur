@@ -10,7 +10,20 @@ open Lang
 (* ****  Statement returns                                 **** *)
 (* ************************************************************ *)
 
-let rec stmt_returns = false
+(**
+ * Vérifie si une fonction termine chaque branche d’exécution correctement
+ * (c'est-à-dire avec un return ou un return expression)
+ * @param le stmt à vérifier
+ * @return true si le stmt finis bien par un return, false sinon
+ *)
+let rec stmt_returns = function
+	| Skip -> false
+	| Assign (aType, aVar, aExpr) -> false
+	| Seq (s1, s2) -> stmt_returns(s1) || stmt_returns(s2)
+	| Cond (cExpr, c1, c2) -> stmt_returns(c1) || stmt_returns(c2)
+	| While (wExpr, wStmt) -> stmt_returns(wStmt)
+	| CallC (cName, exprList) -> true
+	| Return rExpr -> true;;
 
 
 

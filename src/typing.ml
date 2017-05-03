@@ -1,7 +1,9 @@
 (* Typechecking of source programs *)
 
-open Lang
-open Analyses
+#load "analyses.cmo";;
+
+open Lang;;
+open Analyses;;
 
 
 (* Environments *)
@@ -255,7 +257,7 @@ let majEnv = function env -> function vars -> function rType ->
 let tp_fdefn = function env -> function Fundefn (Fundecl (fTp, fnom, fVardecl) as fonction, variables, fStmt) ->
 	let vars = (prepareVars variables) in let env2 = (majEnv env vars fTp) in
 		let newSmtp = (tp_stmt env2 fStmt) in
-			if (fdefnVerifTypeF fTp newSmtp)
+			if (Analyses.stmt_returns newSmtp) && (fdefnVerifTypeF fTp newSmtp)
 			then Fundefn (fonction, variables, newSmtp)
 			else raise FonctionMalTypee;;
 
