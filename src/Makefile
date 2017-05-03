@@ -56,16 +56,27 @@ clean:
 	rm -f lexer.ml parser.ml *.mli *.cmi *.cmo
 
 
-# Lance les tests de la partie 1
-.PHONY: testP1
 
-testP1: 
+
+# Lance tous les tests
+.PHONY: tests
+
+tests: 
+	ocaml testsUnitairesP1.ml
+	ocaml testsExpr.ml
+	ocaml testsUnitairesP2.ml
+
+
+# Lance les tests de la partie 1
+.PHONY: testsP1
+
+testsP1: 
 	ocaml testsUnitairesP1.ml
 	ocaml testsExpr.ml
 
 
 # Lance les tests de la partie 2
-.PHONY: testP2
+.PHONY: testsP2
 
-testP2: 
+testsP2: 
 	ocaml testsUnitairesP2.ml

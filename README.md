@@ -18,8 +18,9 @@ Les tests unitaires sont là enfin de vérifier l'intégritée des fonctions au 
 En effet, elle ne suffisent pas à prouver que le code est bon, mais permettre de vérifier que les fonctions on toujours le comportement attendu en cas de modification du code.
 
 	make
-	make testP1
-	make testP2
+	make tests       (* Pour tester tout le projet *)
+	make testsP1     (* Pour tester la partie 1 *)
+	make testsP2     (* Pour tester la partie 2 *)
 
 #### Avec jasmin et java
 
@@ -81,7 +82,7 @@ Résultats obtenue :
 	["sipush 10"; "sipush 2"; "idiv"];
 	["sipush 10"; "sipush 2"; "irem"]]
 
-* Lancement du test avec `make testP1`
+* Lancement du test avec `make testsP1`
 	
 #### Test avec jasmin
 Enfin de tester, j'ai copié à la main dans Even.j les résultats précédents.

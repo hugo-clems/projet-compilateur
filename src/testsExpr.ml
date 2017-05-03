@@ -51,8 +51,9 @@ let resAttendu = [["sipush 3"; "sipush 4"; "iadd"];
 
 let res = test expressions;;
 
-if res = resAttendu then print_string("TEST REUSSI :\tExercice 5\n")
-					else print_string("/!\\ ECHEC DU TEST :\tExercice 5\n");;
+print_string("\n==== Exercice 5 ====\n");;
+if res = resAttendu then print_string("TEST REUSSI :\tgen_expr\n")
+					else print_string("/!\\ ECHEC DU TEST :\tgen_expr\n");;
 
 
 

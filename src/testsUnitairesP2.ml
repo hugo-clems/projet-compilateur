@@ -31,21 +31,37 @@ let rec listesEgales = function
 
 (**
  * Affiche le résultat d'un test
- * @param exo - le nom de l'exercice testé
+ * @param precisions - petit texte de précisions par rapport à ce qui est testé
  * @param estReussi - true si le test est réussi, false sinon
  *)
-let resTest = function exo -> function estReussi ->
-	if estReussi then print_string("TEST REUSSI :\t" ^ exo ^ "\n")
-	else print_string("/!\\ ECHEC DU TEST :\t" ^ exo ^ "\n");;
-
-let sautDeLigne = function _ -> print_string("\n");;
+let resTest = function precisions -> function estReussi ->
+	if estReussi then print_string("TEST REUSSI :\t" ^ precisions ^ "\n")
+	else print_string("/!\\ ECHEC DU TEST :\t" ^ precisions ^ "\n");;
 
 
-(* *** Environements pour les tests *** *)
+(**
+ * Affiche du texte dans la console lors de l'exécution du code
+ * @param txt - le texte à afficher
+ *)
+let afficheTexte = function txt -> print_string(txt ^ "\n");;
+
+
+(* Divers *)
+let f1 = Fundecl (IntT, "f", [Vardecl (IntT, "n"); Vardecl (BoolT, "b")]);;
+
 let env0 = {localvar = []; globalvar = []; returntp = VoidT; funbind = []};;
 let env1 = {localvar = [("n",IntT);("b",BoolT)]; globalvar = []; returntp = VoidT; funbind = []};;
 
 let vars = ["x";"y";"z"];;
+
+
+
+
+(* *********************** *)
+(* *** Début des tests *** *)
+(* *********************** *)
+
+afficheTexte "\n\t**** PARTIE 2 ****\n";;
 
 
 
@@ -82,7 +98,8 @@ let listOkExo6 = [
 
 
 (* Lance le test et affiche le résultat *)
-resTest "Exercice 6 - tp_stmt" (listesEgales (List.map (tp_stmt env1) listTestExo6, listOkExo6));;
+afficheTexte "==== Exercice 6 ====";
+resTest "tp_stmt" (listesEgales (List.map (tp_stmt env1) listTestExo6, listOkExo6));;
 
 
 
@@ -119,12 +136,13 @@ let exExo7 = Fundefn (
 	Assign (0, Var (Local, "n"), VarE (0, Var (Local, "n"))));;
 
 
-(* Lance le test et affiche le résultat *)
-sautDeLigne();;
-resTest "Exercice 7 - Avec type de retour bon" ((tp_fdefn env0 testExo7) = okExo7);;
-resTest "Exercice 7 - Avec type de retour mauvais" ((tp_fdefn env0 testExo7) <> koExo7);;
-resTest "Exercice 7 - Avec levé d'exception" (try (tp_fdefn env0 exExo7) = (tp_fdefn env0 exExo7) with
-	FonctionMalTypee -> true | _ -> false);;
+(* Lance les tests et affiche le résultat *)
+afficheTexte "";;
+afficheTexte "==== Exercice 7 ====";
+resTest "Avec type de retour bon" ((tp_fdefn env0 testExo7) = okExo7);;
+resTest "Avec type de retour mauvais" ((tp_fdefn env0 testExo7) <> koExo7);;
+resTest "Avec levé d'exception" (try (tp_fdefn env0 exExo7) = (tp_fdefn env0 exExo7) with
+								 FonctionMalTypee -> true | _ -> false);;
 
 
 
@@ -133,32 +151,41 @@ resTest "Exercice 7 - Avec levé d'exception" (try (tp_fdefn env0 exExo7) = (tp_
 (* *** Exercice 8 *** *)
 (* ****************** *)
 
+(* Programme à typer *)
 let testExo8 = Prog([Vardecl (IntT, "n"); Vardecl (BoolT, "b")], [(Fundefn (
 	Fundecl (IntT, "f", [Vardecl (IntT, "n"); Vardecl (BoolT, "b")]),
 	[Vardecl (IntT, "n"); Vardecl (BoolT, "b")],
 	Seq (Skip, Return (Const (0, IntV 1)))))]);;
 
+
+(* Résultats à obtenir *)
 let okExo8 = Prog([], [(Fundefn (
 	Fundecl (IntT, "f", [Vardecl (IntT, "n"); Vardecl (BoolT, "b")]),
 	[Vardecl (IntT, "n"); Vardecl (BoolT, "b")],
 	Seq (Skip, Return (Const (IntT, IntV 1)))))]);;
 
+
+(* Résultats à ne pas obtenir *)
 let koExo8 = Prog([Vardecl (IntT, "n"); Vardecl (BoolT, "b")], [(Fundefn (
 	Fundecl (IntT, "f", [Vardecl (IntT, "n"); Vardecl (BoolT, "b")]),
 	[Vardecl (IntT, "n"); Vardecl (BoolT, "b")],
 	Seq (Skip, Return (Const (IntT, IntV 1)))))]);;
 
+
+(* Doit lever une exception *)
 let exExo8 = Prog([Vardecl (IntT, "n"); Vardecl (BoolT, "b")], [(Fundefn (
 	Fundecl (IntT, "f", [Vardecl (IntT, "n"); Vardecl (BoolT, "b")]),
 	[Vardecl (IntT, "n"); Vardecl (BoolT, "b")],
 	Seq (Skip, Return (Const (0, BoolV true)))))]);;
 
 
-sautDeLigne();;
-resTest "Exercice 8 - Avec programme bon" ((tp_prog testExo8) = okExo8);;
-resTest "Exercice 8 - Avec programme mauvais" ((tp_prog testExo8) <> koExo8);;
-resTest "Exercice 8 - Avec fonction mal typée" (try (tp_prog exExo8) = (tp_prog exExo8) with
-	ProgrammeMauvais -> true | _ -> false);;
+(* Lance les tests et affiche le résultat *)
+afficheTexte "";;
+afficheTexte "==== Exercice 8 ====";
+resTest "Avec programme bon" ((tp_prog testExo8) = okExo8);;
+resTest "Avec programme mauvais" ((tp_prog testExo8) <> koExo8);;
+resTest "Avec fonction mal typée" (try (tp_prog exExo8) = (tp_prog exExo8) with
+								   ProgrammeMauvais -> true | _ -> false);;
 
 
 
@@ -189,9 +216,10 @@ let testCE = CallE (IntT, "add2", [Const (IntT, (IntV 2)) ; Const (IntT, (IntV 4
 let okCE = [Loadc (IntT, IntV 2); Loadc (IntT, IntV 4); Invoke (IntT, "add2", [IntT; IntT]); ReturnI IntT];;
 
 
-sautDeLigne();;
-resTest "Exercice 9 - IfThenElse" ((gen_expr vars [] ifTest) = okIf);;
-resTest "Exercice 9 - CallE" ((gen_expr vars [] testCE) = okCE);;
+afficheTexte "";;
+afficheTexte "==== Exercice 9 ====";
+resTest "IfThenElse" ((gen_expr vars [] ifTest) = okIf);;
+resTest "CallE" ((gen_expr vars [] testCE) = okCE);;
 
 
 
@@ -230,11 +258,12 @@ let okCallC10 = [Loadc (IntT, IntV 2); Loadc (IntT, IntV 4);
 let okReturn10 = [ReturnI IntT];;
 
 
-sautDeLigne();;
-resTest "Exercice 10 - Seq & Cond" ((gen_stmt vars [] testSeqCond10) = okSeqCond10);;
-resTest "Exercice 10 - While & Assign" ((gen_stmt vars [] testWhileAssign10) = okWhileAssign10);;
-resTest "Exercice 10 - CallC" ((gen_stmt vars [] testCallC10) = okCallC10);;
-resTest "Exercice 10 - Return" ((gen_stmt vars [] testReturn10) = okReturn10);;
+afficheTexte "";;
+afficheTexte "==== Exercice 10 ====";
+resTest "Seq & Cond" ((gen_stmt vars [] testSeqCond10) = okSeqCond10);;
+resTest "While & Assign" ((gen_stmt vars [] testWhileAssign10) = okWhileAssign10);;
+resTest "CallC" ((gen_stmt vars [] testCallC10) = okCallC10);;
+resTest "Return" ((gen_stmt vars [] testReturn10) = okReturn10);;
 
 
 
@@ -254,8 +283,9 @@ let okFundefn = Methdefn (Methdecl (IntT, "add_n_to_x", [IntT]), Methinfo (2, 1)
 						  [Loadv (IntT, 0); Loadv (IntT, 1); Bininst (IntT, BArith BAadd); Storev (VoidT, 0)]);;
 
 
-sautDeLigne();;
-resTest "Exercice 11 - Fundefn" ((gen_fundefn testFundefn) = okFundefn);;
+afficheTexte "";;
+afficheTexte "==== Exercice 11 ====";
+resTest "Fundefn" ((gen_fundefn testFundefn) = okFundefn);;
 
 
 
@@ -276,21 +306,12 @@ let testWhile12 = While ((Const (BoolT, (BoolV true)), testReturn12));;
 
 let testCallC12 = CallC ("add2", [Const (IntT, (IntV 2)) ; Const (IntT, (IntV 4))]);;
 
-sautDeLigne();;
-resTest "Exercice 12 - Skip" (not(stmt_returns Skip));;
-resTest "Exercice 12 - Assign" (not(stmt_returns testAssign12));;
-resTest "Exercice 12 - Seq" (stmt_returns testSeq12);;
-resTest "Exercice 12 - Cond" (stmt_returns testCond12);;
-resTest "Exercice 12 - While" (stmt_returns testWhile12);;
-resTest "Exercice 12 - CallC" (stmt_returns testCallC12);;
 
-
-
-
-
-
-
-
-
-
-
+afficheTexte "";;
+afficheTexte "==== Exercice 12 ====";
+resTest "Skip" (not(stmt_returns Skip));;
+resTest "Assign" (not(stmt_returns testAssign12));;
+resTest "Seq" (stmt_returns testSeq12);;
+resTest "Cond" (stmt_returns testCond12);;
+resTest "While" (stmt_returns testWhile12);;
+resTest "CallC" (stmt_returns testCallC12);;
