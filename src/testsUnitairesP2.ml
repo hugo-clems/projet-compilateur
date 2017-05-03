@@ -228,6 +228,30 @@ resTest "Exercice 10 - Return" ((gen_stmt vars [] testReturn10) = okReturn10);;
 
 
 
+(* ******************* *)
+(* *** Exercice 11 *** *)
+(* ******************* *)
+
+let corpsFundefn = Assign (VoidT, Var (Local, "x"),
+	(BinOp (IntT, BArith BAadd, VarE (IntT, Var (Local, "x")), VarE (IntT, Var (Local, "n")))));;
+
+let testFundefn = Fundefn (Fundecl (IntT, "add_n_to_x", [Vardecl (IntT, "n")]),
+							[Vardecl (IntT, "x")], corpsFundefn);;
+
+
+let okFundefn = Methdefn (Methdecl (IntT, "add_n_to_x", [IntT]), Methinfo (2, 1),
+						  [Loadv (IntT, 0); Loadv (IntT, 1); Bininst (IntT, BArith BAadd); Storev (VoidT, 0)]);;
+
+
+resTest "Exercice 11 - Fundefn" ((gen_fundefn testFundefn) = okFundefn);;
+
+
+
+
+
+
+
+
 
 
 

@@ -94,6 +94,33 @@ let rec gen_expr = function variables -> function chemin -> function
 (* *** 3.2 - Génération de code *** *)
 (* Corresponds aux exercices 10 & 11 *)
 
+
+(* *** Fonctions auxiliaires *** *)
+
+(**
+ * Renvoie la liste des types des Vardecls
+ * @param liste de Vardecl
+ * @return liste des types
+ *)
+let rec getTPVardecl = function
+	| [] -> []
+	| (Vardecl (pTP, _)::reste) -> pTP::(getTPVardecl reste);;
+
+
+(**
+ * Renvoie la liste des noms des Vardecls
+ * @param liste de Vardecl
+ * @return liste des noms
+ *)
+let rec getNameVardecl = function
+	| [] -> []
+	| (Vardecl (_, pName)::reste) -> pName::(getNameVardecl reste);;
+
+
+
+
+(* *** Fonctions principales *** *)
+
 (**
  * Traduit un statement en instruction
  * @param variables - liste des variables de la fonction actuelle
@@ -122,6 +149,21 @@ let rec gen_stmt = fun variables chemin -> function
 		in let (listeInstr, listeType) = (genCallC [] [] exprList) in
 			listeInstr @ [Invoke (VoidT, cName, listeType)] @ [ReturnI VoidT]
 	| Return rExpr -> [ReturnI (tp_of_expr rExpr)];;
+
+
+(**
+ * Traduit toute une définition de fonction (l’en-tête et le corps)
+ * @param Fundefn (...) - la fonction à vérifier et ajouter
+ *			fonction - type, nom & paramètres de la fonction
+ *			variables - variables locales de la fonction
+ *			fStmt - corps de la fonction
+ *)
+let gen_fundefn = function Fundefn (Fundecl (fTp, fNom, fParams), variables, fStmt) ->
+	Methdefn (
+		Methdecl (fTp, fNom, (getTPVardecl fParams)),
+		Methinfo (2, 1),
+		(gen_stmt ((getNameVardecl variables)@(getNameVardecl fParams)) [] fStmt)
+	);;
 
 
 
