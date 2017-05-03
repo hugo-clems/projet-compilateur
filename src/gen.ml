@@ -4,13 +4,6 @@ open Lang
 open Analyses
 open Instrs
 
-let tp_of_expr = function
-    Const (t, _) -> t
-  | VarE (t, _) -> t
-  | BinOp (t, _, _, _) -> t
-  | IfThenElse (t, _, _, _) -> t
-  | CallE (t, _, _) -> t
-
 
 
 
@@ -75,7 +68,7 @@ let rec gen_expr = function variables -> function chemin -> function
 	| CallE (ceType, ceNom, ceArgs) ->
 		let rec genCallE = fun listeInstr listeType -> function
 			| [] -> (listeInstr, listeType)
-			| (elt::reste) -> let instrElt = (gen_expr variables chemin elt) and tpElt = (tp_of_expr elt) in
+			| (elt::reste) -> let instrElt = (gen_expr variables chemin elt) and tpElt =(Lang.tp_of_expr elt) in
 				genCallE (listeInstr @ instrElt) (listeType @ [tpElt]) reste
 		in let (listeInstr, listeType) = (genCallE [] [] ceArgs) in
 			listeInstr @ [Invoke (ceType, ceNom, listeType)] @ [ReturnI ceType];;
@@ -144,11 +137,11 @@ let rec gen_stmt = fun variables chemin -> function
 	| CallC (cName, exprList) ->
 		let rec genCallC = fun listeInstr listeType -> function
 			| [] -> (listeInstr, listeType)
-			| (elt::reste) -> let instrElt = (gen_expr variables chemin elt) and tpElt = (tp_of_expr elt) in
+			| (elt::reste) -> let instrElt = (gen_expr variables chemin elt) and tpElt =(Lang.tp_of_expr elt) in
 				genCallC (listeInstr @ instrElt) (listeType @ [tpElt]) reste
 		in let (listeInstr, listeType) = (genCallC [] [] exprList) in
 			listeInstr @ [Invoke (VoidT, cName, listeType)] @ [ReturnI VoidT]
-	| Return rExpr -> [ReturnI (tp_of_expr rExpr)];;
+	| Return rExpr -> [ReturnI (Lang.tp_of_expr rExpr)];;
 
 
 (**

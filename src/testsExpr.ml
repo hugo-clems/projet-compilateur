@@ -20,7 +20,8 @@ let rec affichage = function
 
 let rec test = function
 	| [] -> []
-	| (a::q) -> (affichage (gen_expr ["n"] (tp_expr env1 a)))::(test q);;
+	| (a::q) -> (affichage (gen_expr ["n"] [] (tp_expr env1 a)))::(test q);;
+
 
 
 
@@ -33,6 +34,12 @@ let expressions = [
 	BinOp (0, BArith BAmod, Const (0, IntV 10), Const (0, IntV 2));
 ];;
 
+let resAttendu = [["sipush 3"; "sipush 4"; "iadd"];
+	 ["iload 0"; "sipush 4"; "isub"];
+ 	 ["sipush 3"; "iload 0"; "imul"];
+ 	 ["sipush 10"; "sipush 2"; "idiv"];
+ 	 ["sipush 10"; "sipush 2"; "irem"]];;
+
 
 
 
@@ -42,16 +49,11 @@ let expressions = [
 (* Etape 2 : gen_expr [] etape1 *)
 (* Etape 3 : test etape2   *)
 
-test expressions;;
+let res = test expressions;;
 
-(*
-	On obtient :
-	[["sipush 3"; "sipush 4"; "iadd"];
-	 ["iload 0"; "sipush 4"; "isub"];
- 	 ["sipush 3"; "iload 0"; "imul"];
- 	 ["sipush 10"; "sipush 2"; "idiv"];
- 	 ["sipush 10"; "sipush 2"; "irem"]]
-*)
+if res = resAttendu then print_string("TEST REUSSI :\tExercice 5\n")
+					else print_string("/!\\ ECHEC DU TEST :\tExercice 5\n");;
+
 
 
 
@@ -64,9 +66,3 @@ test expressions;;
 	java Wrapper 0			result: 5			(* 10/2 *)
 	java Wrapper 0			result: 0			(* 10%2  *)
 *)
-
-
-
-
-
-

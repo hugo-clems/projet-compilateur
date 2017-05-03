@@ -1,7 +1,5 @@
 (* Typechecking of source programs *)
 
-#load "analyses.cmo";;
-
 open Lang;;
 open Analyses;;
 
@@ -9,17 +7,6 @@ open Analyses;;
 (* Environments *)
 type environment = {localvar: (vname * tp) list; globalvar: (vname * tp) list;
 					returntp: tp; funbind: fundecl list};;
-
-
-(* Pour une raison inconnu, il est nécéssaires de redéfinir ces fonctions présentes dans lang.ml *)
-let tp_of_vardecl (Vardecl (t, _)) = t;;
-let tp_of_expr = function
-	| Const (t, _) -> t
-	| VarE (t, _) -> t
-	| BinOp (t, _, _, _) -> t
-	| IfThenElse (t, _, _, _) -> t
-	| CallE (t, _, _) -> t;;
-let params_of_fundecl (Fundecl (t, fn, pds)) = pds;;
 
 
 
@@ -73,7 +60,7 @@ let valueTOtp = function
  * @param les expressions ('a expr)
  * @return true si les expressions ont le même types, false sinon
  *)
-let memeType = function exp1 -> function exp2 -> (tp_of_expr exp1) == (tp_of_expr exp2);;
+let memeType = function exp1 -> function exp2 -> (Lang.tp_of_expr exp1) == (Lang.tp_of_expr exp2);;
 
 
 (**
@@ -82,7 +69,7 @@ let memeType = function exp1 -> function exp2 -> (tp_of_expr exp1) == (tp_of_exp
  * @param leType - le type éventuel de l'expression
  * @return true si l'expression est bien de ce type, false sinon
  *)
-let estCeType = function exp1 -> function leType -> (tp_of_expr exp1) == leType;;
+let estCeType = function exp1 -> function leType -> (Lang.tp_of_expr exp1) == leType;;
 
 
 (* Accesseurs sur fundecl (en complèment de celui présent dans lang) *)
@@ -111,7 +98,7 @@ let rec parcoursFct = function nomR -> function
 let rec verifCallE = function
 	| ([],_) -> true
 	| (_,[]) -> false
-	| ((arg::resteA),(param::resteP)) -> estCeType arg (tp_of_vardecl param) && verifCallE(resteA,resteP);;
+	| ((arg::resteA),(param::resteP)) -> estCeType arg (Lang.tp_of_vardecl param) && verifCallE(resteA,resteP);;
 
 
 (**
@@ -151,10 +138,10 @@ let rec tp_expr = function env -> function
 	| IfThenElse ((_ : int), iexpr1, iexpr2, iexpr3) ->
 		let e1 = (tp_expr env iexpr1) and e2 = (tp_expr env iexpr2) and e3 = (tp_expr env iexpr3) in
 			if estCeType e1 BoolT && memeType e2 e3
-			then IfThenElse ((tp_of_expr e2), e1, e2, e3) else raise ErreurTypes
+			then IfThenElse ((Lang.tp_of_expr e2), e1, e2, e3) else raise ErreurTypes
 	| CallE ((_ : int), nom, args) -> 
 		let f = parcoursFct nom env.funbind and arguments = List.map (tp_expr env) args in
-			if verifCallE(arguments, params_of_fundecl f)
+			if verifCallE(arguments, Lang.params_of_fundecl f)
 			then CallE (type_of_fundecl f, nom, arguments) else raise MauvaisArguments;;
 
 
@@ -212,7 +199,7 @@ let rec tp_stmt = function env -> function
  * @return true si le type est bon, false sinon
  *)
 let rec fdefnVerifTypeF = function tpF -> function
-	| Return rExpr -> tpF == (tp_of_expr rExpr)
+	| Return rExpr -> tpF == (Lang.tp_of_expr rExpr)
 	| Seq (s1, s2) -> (fdefnVerifTypeF tpF s1) || (fdefnVerifTypeF tpF s2)
 	| Cond (cExpr, c1, c2) -> (fdefnVerifTypeF tpF c1) || (fdefnVerifTypeF tpF c2)
 	| While (wExpr, wStmt) -> (fdefnVerifTypeF tpF wStmt)

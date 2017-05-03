@@ -2,6 +2,9 @@
 (* **** Tests unitaires - Partie 1 **** *)
 (* ************************************ *)
 
+#load "analyses.cmo";;
+#load "lang.cmo";;
+
 #use "lang.ml";;
 #use "typing.ml";;
 #use "gen.ml";;
@@ -128,8 +131,8 @@ let resGConst = [Loadc (IntT, IntV 3)];;
 let resGVarE = [Loadv (IntT, 0)];;
 let resGBinOp = [Loadc (IntT, IntV 3) ; Loadv (IntT, 0) ; Bininst (IntT, BArith BAadd)];;
 
-let testOkG = function res -> function sol -> listesEgales(res, (gen_expr ["x";"y";"z"] sol));;
-let testKoG = function test -> try (gen_expr ["x";"y";"z"] test)
+let testOkG = function res -> function sol -> listesEgales(res, (gen_expr ["x";"y";"z"] [] sol));;
+let testKoG = function test -> try (gen_expr ["x";"y";"z"] [] test)
 								with PasDansLaliste -> okG | _ -> koG;;
 
 

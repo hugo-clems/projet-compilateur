@@ -54,3 +54,18 @@ parser.cmo: parser.ml parser.cmi lang.cmo
 
 clean: 
 	rm -f lexer.ml parser.ml *.mli *.cmi *.cmo
+
+
+# Lance les tests de la partie 1
+.PHONY: testP1
+
+testP1: 
+	ocaml testsUnitairesP1.ml
+	ocaml testsExpr.ml
+
+
+# Lance les tests de la partie 2
+.PHONY: testP2
+
+testP2: 
+	ocaml testsUnitairesP2.ml
