@@ -315,3 +315,55 @@ resTest "Seq" (stmt_returns testSeq12);;
 resTest "Cond" (stmt_returns testCond12);;
 resTest "While" (stmt_returns testWhile12);;
 resTest "CallC" (stmt_returns testCallC12);;
+
+
+
+
+(* ******************* *)
+(* *** Exercice 13 *** *)
+(* ******************* *)
+
+let testConst13 = Const (BoolT, (BoolV true));;
+
+let testVarE13 = VarE (IntT, Var (Local, "x"));;
+
+let testBinOp13 = BinOp (IntT, BArith BAadd, testVarE13, Const (IntT, (IntV 1)));;
+
+let testIfThenElse13 = IfThenElse (IntT, testConst13, (Const (IntT, (IntV 444))), (Const (IntT, (IntV 555))));;
+
+let testCallE13 = CallE (IntT, "add2", [Const (IntT, (IntV 2)) ; Const (IntT, (IntV 4))]);;
+
+let testReturn13 = Return (testConst13);;
+
+let testAssign13 = Assign (VoidT, Var (Local, "x"), (Const (IntT, (IntV 1))));;
+
+let testSeq13 = Seq (Skip, testReturn13);;
+
+let testCond13 = Cond ((Const (BoolT, (BoolV true))), Skip, testReturn13);;
+
+let testWhile13 = While ((Const (BoolT, (BoolV true)), testReturn13));;
+
+let testCallC13 = CallC ("add2", [Const (IntT, (IntV 2)) ; Const (IntT, (IntV 4))]);;
+
+
+afficheTexte "";;
+afficheTexte "==== Exercice 13 ====";
+resTest "Const" ((stack_depth_e testConst13) = 1);;
+resTest "VarE" ((stack_depth_e testVarE13) = 1);;
+resTest "BinOp" ((stack_depth_e testBinOp13) = 1);;
+resTest "IfThenElse" ((stack_depth_e testIfThenElse13) = 2);;
+resTest "CallE" ((stack_depth_e testCallE13) = 2);;
+resTest "Return" ((stack_depth_c testReturn13) = 1);;
+resTest "Assign" ((stack_depth_c testAssign13) = 1);;
+resTest "Seq" ((stack_depth_c testSeq13) = 1);;
+resTest "Cond" ((stack_depth_c testCond13) = 2);;
+resTest "While" ((stack_depth_c testWhile13) = 2);;
+resTest "CallC" ((stack_depth_c testWhile13) = 2);;
+
+
+
+
+
+
+
+

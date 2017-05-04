@@ -31,11 +31,42 @@ let rec stmt_returns = function
 (* ****  Stack depth                                       **** *)
 (* ************************************************************ *)
 
+(**
+ * Calcul la somme des élèments d'une liste
+ * @param la liste
+ * @return la somme de ses éléments
+ *)
+let rec listsum = function
+	| [] -> 0
+	| (elt::reste) -> elt + (listsum reste);;
 
 
-let rec stack_depth_e = 0
+(**
+ * Calcul la taille de la pile d'opérandes pour les expressions
+ * @param l'expression
+ * @return la taille de la pile d'opérandes nécéssaires
+ *)
+let rec stack_depth_e = function
+	| Const (cType, cValeur) -> 1
+	| VarE (vType, Var (varBinding, vVname)) -> 1
+	| BinOp (bType, bBinop, bExpr1, bExpr2) -> max (stack_depth_e bExpr1) (stack_depth_e bExpr2)
+	| IfThenElse (iType, ie, i1, i2) -> (stack_depth_e ie) + (max (stack_depth_e i1) (stack_depth_e i2))
+	| CallE (ceType, ceNom, ceArgs) -> listsum (List.map stack_depth_e ceArgs);;
 
-let rec stack_depth_c = 0
+
+(**
+ * Calcul la taille de la pile d'opérandes pour les instructions
+ * @param l'instruction
+ * @return la taille de la pile d'opérandes nécéssaires
+ *)
+let rec stack_depth_c = function
+	| Skip -> 0
+	| Assign (aType, aVar, aExpr) -> stack_depth_e aExpr
+	| Seq (s1, s2) -> (stack_depth_c s1) + (stack_depth_c s2)
+	| Cond (cExpr, c1, c2) -> (stack_depth_e cExpr) + (max (stack_depth_c c1) (stack_depth_c c2))
+	| While (wExpr, wStmt) -> (stack_depth_e wExpr) + (stack_depth_c wStmt)
+	| CallC (cName, exprList) -> listsum (List.map stack_depth_e exprList)
+	| Return rExpr -> stack_depth_e rExpr;;
 
 
 

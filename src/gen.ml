@@ -154,7 +154,7 @@ let rec gen_stmt = fun variables chemin -> function
 let gen_fundefn = function Fundefn (Fundecl (fTp, fNom, fParams), variables, fStmt) ->
 	Methdefn (
 		Methdecl (fTp, fNom, (getTPVardecl fParams)),
-		Methinfo (2, 1),
+		Methinfo ((1 + (Analyses.stack_depth_c fStmt)), (List.length variables)),
 		(gen_stmt ((getNameVardecl variables)@(getNameVardecl fParams)) [] fStmt)
 	);;
 
