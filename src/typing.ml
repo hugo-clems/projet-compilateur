@@ -164,9 +164,7 @@ let rec tp_expr = function env -> function
 (* *** Gestion des erreurs *** *)
 
 exception FonctionMalTypee;;
-
-(* Si une des fonctions est mal typée, alors le programme n'est pas bon *)
-exception ProgrammeMauvais;;
+exception MotsInterdits;;
 
 
 
@@ -185,6 +183,26 @@ let rec tp_stmt = function env -> function
 	| While (wExpr, wStmt) -> While((tp_expr env wExpr), (tp_stmt env wStmt))
 	| CallC (cName, exprList) -> CallC(cName, (List.map (tp_expr env) exprList))
 	| Return rExpr -> Return(tp_expr env rExpr);;
+
+
+(* Liste des mots interdits *)
+let forbiddenKeywords = [
+	"auto";
+	"break";
+	"case"; "char"; "const"; "continue";
+    "default"; "do"; "double";
+    "else"; "enum"; "extern";
+    "float"; "for";
+    "goto";
+    "if"; "int";
+    "long";
+    "register"; "return";
+    "short"; "signed"; "sizeof"; "static"; "struct"; "switch";
+    "typedef";
+    "union"; "unsigned";
+    "void"; "volatile";
+    "while"
+];;
 
 
 
@@ -227,6 +245,19 @@ let majEnv = function env -> function vars -> function rType ->
 	{localvar = vars @ (env.localvar); globalvar = env.globalvar; returntp = rType; funbind = env.funbind};;
 
 
+(**
+ * Vérifie que les fonctions n'utilisent pas de mots interdits
+ * @param lesMotsInterdits - la liste des mots interdits
+ * @param les fonctions à vérifier
+ * @return boolean
+ *)
+let rec pasDeMotsInterdits = function lesMotsInterdits -> function 
+	| [] -> true
+	| (Vardecl (_, nom)::reste) -> if (List.mem nom lesMotsInterdits)
+								   then raise MotsInterdits
+								   else pasDeMotsInterdits lesMotsInterdits reste;;
+
+
 
 
 (* *** Fonctions principales *** *)
@@ -240,11 +271,13 @@ let majEnv = function env -> function vars -> function rType ->
  *			fStmt - corps de la fonction
  * @return la fonction typée
  * @throw FonctionMalTypee - si la fonction est mal typée
+ * @throw MotsInterdits - si la fonction contient des mots interdits forbiddenKeywords
  *)
 let tp_fdefn = function env -> function Fundefn (Fundecl (fTp, fnom, fVardecl) as fonction, variables, fStmt) ->
-	let vars = (prepareVars variables) in let env2 = (majEnv env vars fTp) in
+	let vars = (prepareVars (fVardecl @ variables)) in let env2 = (majEnv env vars fTp) in
 		let newSmtp = (tp_stmt env2 fStmt) in
-			if (Analyses.stmt_returns newSmtp) && (fdefnVerifTypeF fTp newSmtp)
+			if (pasDeMotsInterdits forbiddenKeywords fVardecl)
+				&& (Analyses.stmt_returns newSmtp) && (fdefnVerifTypeF fTp newSmtp)
 			then Fundefn (fonction, variables, newSmtp)
 			else raise FonctionMalTypee;;
 
@@ -256,15 +289,11 @@ let tp_fdefn = function env -> function Fundefn (Fundecl (fTp, fnom, fVardecl) a
  * @param varGlob - liste des variables globales
  * @param fundefListe - liste des fonctions
  * @return le programme avec les fonctions vérifiées
- * @throw ProgrammeMauvais - si une des fonctions est mal typée, alors le programme n'est pas bon
  *)
 let tp_prog = function Prog (varGlob, fundefListe) ->
-	let env = {localvar = []; globalvar = (prepareVars varGlob); returntp = VoidT; funbind = []} in
-		let rec f = function
-			| [] -> []
-			| (a::r) -> try (tp_fdefn env a)::(f r)
-						with FonctionMalTypee -> raise ProgrammeMauvais
-		in Prog([], f fundefListe);;
+	let env = {localvar = []; globalvar = (prepareVars varGlob); returntp = VoidT;
+				funbind = (List.map (function Fundefn(decl, _, _) -> decl) fundefListe)}
+	in Prog([], List.map (tp_fdefn env) fundefListe);;
 
 
 
