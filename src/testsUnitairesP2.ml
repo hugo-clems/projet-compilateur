@@ -282,7 +282,7 @@ let testFundefn = Fundefn (Fundecl (IntT, "add_n_to_x", [Vardecl (IntT, "n")]),
 
 
 let okFundefn = Methdefn (Methdecl (IntT, "add_n_to_x", [IntT]), Methinfo (2, 1),
-						  [Loadv (IntT, 0); Loadv (IntT, 1); Bininst (IntT, BArith BAadd); Storev (VoidT, 0)]);;
+						  [Loadv (IntT, 1); Loadv (IntT, 0); Bininst (IntT, BArith BAadd); Storev (VoidT, 1)]);;
 
 
 afficheTexte "";;

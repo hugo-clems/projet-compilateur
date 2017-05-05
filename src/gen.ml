@@ -88,32 +88,6 @@ let rec gen_expr = function variables -> function chemin -> function
 (* Corresponds aux exercices 10 & 11 *)
 
 
-(* *** Fonctions auxiliaires *** *)
-
-(**
- * Renvoie la liste des types des Vardecls
- * @param liste de Vardecl
- * @return liste des types
- *)
-let rec getTPVardecl = function
-	| [] -> []
-	| (Vardecl (pTP, _)::reste) -> pTP::(getTPVardecl reste);;
-
-
-(**
- * Renvoie la liste des noms des Vardecls
- * @param liste de Vardecl
- * @return liste des noms
- *)
-let rec getNameVardecl = function
-	| [] -> []
-	| (Vardecl (_, pName)::reste) -> pName::(getNameVardecl reste);;
-
-
-
-
-(* *** Fonctions principales *** *)
-
 (**
  * Traduit un statement en instruction
  * @param variables - liste des variables de la fonction actuelle
@@ -153,9 +127,9 @@ let rec gen_stmt = fun variables chemin -> function
  *)
 let gen_fundefn = function Fundefn (Fundecl (fTp, fNom, fParams), variables, fStmt) ->
 	Methdefn (
-		Methdecl (fTp, fNom, (getTPVardecl fParams)),
+		Methdecl (fTp, fNom, (List.map tp_of_vardecl fParams)),
 		Methinfo ((1 + (Analyses.stack_depth_c fStmt)), (List.length variables)),
-		(gen_stmt ((getNameVardecl variables)@(getNameVardecl fParams)) [] fStmt)
+		(gen_stmt (List.map name_of_vardecl (fParams @ variables)) [] fStmt)
 	);;
 
 
@@ -169,11 +143,15 @@ let gen_fundefn = function Fundefn (Fundecl (fTp, fNom, fParams), variables, fSt
 (* **** Compilation of methods / programs                  **** *)
 (* ************************************************************ *)
 
-let gen_prog (Prog (gvds, fdfs)) = 
+let gen_prog = function Prog (varGlob, fundefListe) -> JVMProg ([], List.map gen_fundefn fundefListe);;
+
+
+
+
+(* Ancien gen_prog *)
+(*let gen_prog (Prog (gvds, fdfs)) = 
   JVMProg ([], 
            [Methdefn (Methdecl (IntT, "even", [IntT]),
                       Methinfo (3, 1),
-                      [Loadc (IntT, IntV 0); ReturnI IntT])])
-
-
+                      [Loadc (IntT, IntV 0); ReturnI IntT])])*)
 
