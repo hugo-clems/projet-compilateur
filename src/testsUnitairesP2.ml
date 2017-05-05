@@ -187,7 +187,7 @@ afficheTexte "==== Exercice 8 ====";
 resTest "Avec programme bon" ((tp_prog testExo8) = okExo8);;
 resTest "Avec programme mauvais" ((tp_prog testExo8) <> koExo8);;
 resTest "Avec fonction mal typée" (try (tp_prog exExo8) = (tp_prog exExo8) with
-								   ProgrammeMauvais -> true | _ -> false);;
+								   FonctionMalTypee -> true | _ -> false);;
 
 
 
@@ -204,14 +204,14 @@ let i1test = IfThenElse (IntT, ieTrue, (Const (IntT, (IntV 666))), (Const (IntT,
 let i2test = IfThenElse (IntT, ieTrue, (Const (IntT, (IntV 888))), (Const (IntT, (IntV 999))));;
 let ifTest = IfThenElse (IntT, ieTest, i1test, i2test);;
 
-let okIf = [Loadc (BoolT, BoolV false); Loadc (IntT, IntV 0); If (BCeq, [2; 0]);
+let okIf = [Loadc (IntT, IntV 0); Loadc (IntT, IntV 0); If (BCeq, [2; 0]);
  Loadc (IntT, IntV 444); Goto [2; 2]; Label [2; 0]; Loadc (IntT, IntV 555);
- Label [2; 2]; Loadc (IntT, IntV 0); If (BCeq, [0]);
- Loadc (BoolT, BoolV true); Loadc (IntT, IntV 0); If (BCeq, [1; 0]);
- Loadc (IntT, IntV 666); Goto [1; 2]; Label [1; 0]; Loadc (IntT, IntV 777);
- Label [1; 2]; Goto [2]; Label [0]; Loadc (BoolT, BoolV true);
- Loadc (IntT, IntV 0); If (BCeq, [0; 0]); Loadc (IntT, IntV 888);
- Goto [0; 2]; Label [0; 0]; Loadc (IntT, IntV 999); Label [0; 2]; Label [2]];;
+ Label [2; 2]; Loadc (IntT, IntV 0); If (BCeq, [0]); Loadc (IntT, IntV 1);
+ Loadc (IntT, IntV 0); If (BCeq, [1; 0]); Loadc (IntT, IntV 666);
+ Goto [1; 2]; Label [1; 0]; Loadc (IntT, IntV 777); Label [1; 2]; Goto [2];
+ Label [0]; Loadc (IntT, IntV 1); Loadc (IntT, IntV 0); If (BCeq, [0; 0]);
+ Loadc (IntT, IntV 888); Goto [0; 2]; Label [0; 0]; Loadc (IntT, IntV 999);
+ Label [0; 2]; Label [2]];;
 
 (* Test CallE *)
 let testCE = CallE (IntT, "add2", [Const (IntT, (IntV 2)) ; Const (IntT, (IntV 4))]);;
@@ -245,14 +245,14 @@ let testCallC10 = CallC ("add2", [Const (IntT, (IntV 2)) ; Const (IntT, (IntV 4)
 let testReturn10 = Return (VarE (IntT, Var (Local, "x")));;
 
 
-let okSeqCond10 = [Nop; Loadc (BoolT, BoolV true); Loadc (IntT, IntV 0); If (BCeq, [0]);
- 					Loadc (IntT, IntV 0); Storev (VoidT, 0); Goto [2]; Label [0]; Nop;
- 					Label [2]];;
+let okSeqCond10 = [Nop; Loadc (IntT, IntV 1); Loadc (IntT, IntV 0); If (BCeq, [0]);
+					Loadc (IntT, IntV 0); Storev (IntT, 0); Goto [2]; Label [0]; Nop; Label [2]];;
 
-let okWhileAssign10 = [Label [1]; Loadv (IntT, 0); Loadc (IntT, IntV 5);
-					   Bininst (BoolT, BCompar BCne); Loadc (IntT, IntV 0); If (BCeq, [0]);
-					   Loadv (IntT, 0); Loadc (IntT, IntV 1); Bininst (IntT, BArith BAadd);
-					   Storev (VoidT, 0); Goto [1]; Label [0]; Nop];;
+let okWhileAssign10 = [Label [1]; Loadv (IntT, 0); Loadc (IntT, IntV 5); If (BCne, [2; 0]);
+ Loadc (IntT, IntV 0); Goto [2; 1]; Label [2; 0]; Loadc (IntT, IntV 1);
+ Label [2; 1]; Loadc (IntT, IntV 0); If (BCeq, [0]); Loadv (IntT, 0);
+ Loadc (IntT, IntV 1); Bininst (IntT, BArith BAadd); Storev (IntT, 0);
+ Goto [1]; Label [0]; Nop];;
 
 let okCallC10 = [Loadc (IntT, IntV 2); Loadc (IntT, IntV 4);
 				  Invoke (VoidT, "add2", [IntT; IntT]); ReturnI VoidT];;
@@ -282,7 +282,8 @@ let testFundefn = Fundefn (Fundecl (IntT, "add_n_to_x", [Vardecl (IntT, "n")]),
 
 
 let okFundefn = Methdefn (Methdecl (IntT, "add_n_to_x", [IntT]), Methinfo (2, 1),
-						  [Loadv (IntT, 1); Loadv (IntT, 0); Bininst (IntT, BArith BAadd); Storev (VoidT, 1)]);;
+ [Loadv (IntT, 1); Loadv (IntT, 0); Bininst (IntT, BArith BAadd);
+  Storev (IntT, 1)]);;
 
 
 afficheTexte "";;

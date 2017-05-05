@@ -7,10 +7,6 @@ open Instrs
 
 
 
-
-
-
-
 (* ************************************************* *)
 (* *** 2. Typage et compilation pour expressions *** *)
 (* ************************************************* *)
@@ -43,7 +39,14 @@ let rec position = function elt -> function
 	| [] -> raise PasDansLaliste
 	| (a::reste) -> if a = elt then 0 else 1 + position elt reste;;
 
-
+(**
+ * Transforme un BoolT en IntT
+ * @param le type à transformer
+ * @return le type transformé
+ *)
+let boolToInt = function
+	| BoolT -> IntT
+	| leType -> leType;;
 
 
 (* *** Fonction principale *** *)
@@ -56,11 +59,18 @@ let rec position = function elt -> function
  * @return l'instruction traduite
  *)
 let rec gen_expr = function variables -> function chemin -> function
-	| Const (cType, cValeur) -> [Loadc (cType, cValeur)]
 	| VarE (vType, Var (varBinding, vVname)) -> [Loadv (vType, (position vVname variables))]
-	| BinOp (bType, bBinop, bExpr1, bExpr2) ->
-		let e1 = (gen_expr variables chemin bExpr1) and e2 = (gen_expr variables chemin bExpr2) in
-			e1 @ e2 @ [Bininst (bType, bBinop)]
+	| (Const (IntT,  IntV  i)) -> [Loadc (IntT, IntV i)]
+	| (Const (BoolT, BoolV b)) -> let i = if b then 1 else 0 in [Loadc (IntT, IntV i)]
+	| (Const _) -> failwith "Const can't be void..."
+	| (BinOp (bType, bBinop, b1, b2)) -> 
+		let leGen = (gen_expr variables) in let e1 = leGen chemin b1 and e2 = leGen chemin b2 
+		in begin (match bBinop with 
+			| BArith _ | BLogic _ -> e1 @ e2 @ [Bininst (IntT, bBinop)]
+			| BCompar cmpOperator ->
+				let lTrue = chemin @ [0] and lFin = chemin @ [1]
+				in e1 @ e2 @ If (cmpOperator, lTrue)::Loadc (IntT, IntV 0)::Goto lFin 
+					::Label lTrue::Loadc (IntT, IntV 1)::[Label lFin]) end
 	| IfThenElse (iType, ie, i1, i2) -> let lFalse = chemin @ [0] and lFin = chemin @ [2] in
 		(gen_expr variables lFin ie) @ [Loadc (IntT, (IntV 0))] @ [If (BCeq, lFalse)] @
 		(gen_expr variables (chemin @ [1]) i1) @ [Goto lFin] @
@@ -97,8 +107,12 @@ let rec gen_expr = function variables -> function chemin -> function
  *)
 let rec gen_stmt = fun variables chemin -> function
 	| Skip -> [Nop]
-	| Assign (aType, Var (aVb, aVn), aExpr) ->
-		(gen_expr variables chemin aExpr) @ [Storev (aType, (position aVn variables))]
+	| Assign (tp, Var(binding, vname), exp) ->
+	let instrsList = gen_expr variables chemin exp in
+		if binding = Local then
+			let pos = position vname variables 
+			in instrsList @ [Storev (IntT, pos)]
+		else instrsList @ [Putstatic (IntT, vname)]
 	| Seq (s1, s2) -> (gen_stmt variables chemin s1) @ (gen_stmt variables chemin s2)
 	| Cond (cExpr, c1, c2) -> let lFalse = chemin @ [0] and lFin = chemin @ [2] in
 		(gen_expr variables lFin cExpr) @ [Loadc (IntT, (IntV 0))] @ [If (BCeq, lFalse)] @
@@ -115,7 +129,13 @@ let rec gen_stmt = fun variables chemin -> function
 				genCallC (listeInstr @ instrElt) (listeType @ [tpElt]) reste
 		in let (listeInstr, listeType) = (genCallC [] [] exprList) in
 			listeInstr @ [Invoke (VoidT, cName, listeType)] @ [ReturnI VoidT]
-	| Return rExpr -> [ReturnI (Lang.tp_of_expr rExpr)];;
+	| Return rExpr -> [ReturnI (boolToInt (Lang.tp_of_expr rExpr))];;
+
+
+	
+	
+	
+
 
 
 (**
@@ -127,14 +147,10 @@ let rec gen_stmt = fun variables chemin -> function
  *)
 let gen_fundefn = function Fundefn (Fundecl (fTp, fNom, fParams), variables, fStmt) ->
 	Methdefn (
-		Methdecl (fTp, fNom, (List.map tp_of_vardecl fParams)),
+		Methdecl (boolToInt fTp, fNom, (List.map tp_of_vardecl fParams)),
 		Methinfo ((1 + (Analyses.stack_depth_c fStmt)), (List.length variables)),
 		(gen_stmt (List.map name_of_vardecl (fParams @ variables)) [] fStmt)
 	);;
-
-
-
-
 
 
 
@@ -144,8 +160,6 @@ let gen_fundefn = function Fundefn (Fundecl (fTp, fNom, fParams), variables, fSt
 (* ************************************************************ *)
 
 let gen_prog = function Prog (varGlob, fundefListe) -> JVMProg ([], List.map gen_fundefn fundefListe);;
-
-
 
 
 (* Ancien gen_prog *)
