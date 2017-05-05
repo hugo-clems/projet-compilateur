@@ -54,6 +54,8 @@ let env1 = {localvar = [("n",IntT);("b",BoolT)]; globalvar = []; returntp = Void
 
 let vars = ["x";"y";"z"];;
 
+let testVS = StringSet.of_list ["x"; "y"];;
+
 
 
 
@@ -359,6 +361,37 @@ resTest "Seq" ((stack_depth_c testSeq13) = 1);;
 resTest "Cond" ((stack_depth_c testCond13) = 2);;
 resTest "While" ((stack_depth_c testWhile13) = 2);;
 resTest "CallC" ((stack_depth_c testWhile13) = 2);;
+
+
+
+
+(* ******************* *)
+(* *** Exercice 14 *** *)
+(* ******************* *)
+
+let okExpr14 = VarE (IntT, Var (Local, "x"));;
+
+let koExpr14 = VarE (IntT, Var (Local, "z"));;
+
+let okInst14 = Return okExpr14;;
+
+let koInst14 = Return koExpr14;;
+
+
+afficheTexte "";;
+afficheTexte "==== Exercice 14 ====";
+resTest "defassign_e" ((defassign_e testVS okExpr14) && not(defassign_e testVS koExpr14));;
+resTest "defassign_c" ((defassign_c testVS okInst14) = testVS &&
+	try (defassign_c testVS koInst14) = testVS with ExpressionIndefinie -> true | _ -> false);;
+
+
+
+
+
+
+
+
+
 
 
 

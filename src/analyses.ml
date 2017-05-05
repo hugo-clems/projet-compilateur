@@ -74,13 +74,68 @@ let rec stack_depth_c = function
 (* ****  Definite Assignment                               **** *)
 (* ************************************************************ *)
 
+exception ExpressionIndefinie;;
+
+
 module StringSet = 
   Set.Make
     (struct type t = string 
 	    let compare = Pervasives.compare 
      end)
 
-let rec defassign_e a = true
 
-let rec defassign_c allvs a = a
+(**
+ * Vérifie que toutes les variables de e sont présentes dans vs.
+ * @param vs - ensemble de variables qui ont certainement une valeur
+ * @param e - expression dont on vérifie toutes les variables
+ * @return true si toutes les variables de e sont présentes dans vs
+ *)
+let rec defassign_e = function vs -> function
+	| Const (_, _) -> true
+	| VarE (_, Var (_, vVname)) -> StringSet.mem vVname vs (* (StringSet.of_list vs) *)
+	| BinOp (_, _, bExpr1, bExpr2) -> (defassign_e vs bExpr1) && (defassign_e vs bExpr2)
+	| IfThenElse (_, ie, i1, i2) -> (defassign_e vs ie) && (defassign_e vs i1) && (defassign_e vs i2)
+	| CallE (_, _, ceArgs) ->
+		let rec defCallE = function
+			| (expr::reste)-> (defassign_e vs expr) && (defCallE reste)
+			| _ -> true
+		in defCallE ceArgs;;
+
+
+(**
+ * Vérifie que toutes les variables de i sont présentes dans vs.
+ * @param vs - ensemble de variables qui ont certainement une valeur
+ * @param i - instruction dont on vérifie toutes les variables
+ * @return vs
+ * @throw ExpressionIndefinie - si une des sous-expressions renvoie false
+ *)
+let rec defassign_c = function vs -> function
+	| Skip -> vs
+	| Assign (aType, Var (_, avName), aExpr) ->
+		if (defassign_e vs aExpr)
+		then StringSet.add avName vs
+		else raise ExpressionIndefinie
+	| Seq (s1, s2) ->
+		let vs = defassign_c vs s1 in defassign_c vs s2
+	| Cond (cExpr, c1, c2) ->
+		if (defassign_e vs cExpr)
+		then let sA = defassign_c vs c1 in let sB = defassign_c vs c2 in StringSet.inter sA sB
+		else raise ExpressionIndefinie
+	| While (wExpr, wStmt) ->
+		if (defassign_e vs wExpr)
+		then let _ = defassign_c vs wStmt in vs
+		else raise ExpressionIndefinie
+	| CallC (cName, exprList) ->
+		let defCallC = List.map (defassign_e vs) exprList in
+			if List.exists not defCallC
+			then raise ExpressionIndefinie
+			else vs
+	| Return rExpr -> if (defassign_e vs rExpr) then vs else raise ExpressionIndefinie;;
+
+
+
+
+
+
+
 

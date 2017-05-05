@@ -149,7 +149,7 @@ Le project compile. Les tests unitaires ont réussis.
 
 Le project compile. Les tests unitaires ont réussis.
 
-### Exercice 11 & 12
+### Exercice 11, 12, 13 & 14
 
 RAS
 
