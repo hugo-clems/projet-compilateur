@@ -1,12 +1,8 @@
-# Projet : Compilateur de C vers Bytecode Java - L3 Info - 2016/2017
+# Projet : Compilateur de C vers Bytecode Java - L3 Info - 2017 - 🐫
 Par Hugo CLEMENT
 
 
 ## Informations
-### Collaboration
-Travail effectué en collaboration avec Pauline Fuzier (entraide et réflexions).
-
-
 ### Makefile
 J'ai modifié le Makefile afin de pouvoir lancer les tests plus simplement (voir *Comment tester ?*).
 
